@@ -1,4 +1,4 @@
-from layers import GraphConvolution, GraphConvolutionSparse, InnerProductDecoder
+from layers import GraphConvolution, GraphConvolutionSparse, InnerProductDecoder, Attention
 import tensorflow as tf
 
 flags = tf.app.flags
@@ -47,32 +47,54 @@ class ARGA(Model):
         self.inputs = placeholders['features']
         self.input_dim = num_features
         self.features_nonzero = features_nonzero
-        self.adj = placeholders['adj']
+        self.adjs = placeholders['adjs']
         self.dropout = placeholders['dropout']
         self.build()
 
     def _build(self):
-
+        emb_list = []
         with tf.variable_scope('Encoder', reuse=None):
-            self.hidden1 = GraphConvolutionSparse(input_dim=self.input_dim,
-                                                  output_dim=FLAGS.hidden1,
-                                                  adj=self.adj,
-                                                  features_nonzero=self.features_nonzero,
-                                                  act=tf.nn.relu,
-                                                  dropout=self.dropout,
-                                                  logging=self.logging,
-                                                  name='e_dense_1')(self.inputs)
+            for hop_num, adj in enumerate(self.adjs):
+                self.hidden1 = GraphConvolutionSparse(input_dim=self.input_dim,
+                                                      output_dim=FLAGS.hidden1,
+                                                      adj=adj,
+                                                      features_nonzero=self.features_nonzero,
+                                                      act=tf.nn.relu,
+                                                      dropout=self.dropout,
+                                                      logging=self.logging,
+                                                      name='e_dense_1_{}'.format(hop_num))(self.inputs)
 
+                self.noise = gaussian_noise_layer(self.hidden1, 0.1)
 
-            self.noise = gaussian_noise_layer(self.hidden1, 0.1)
+                embeddings = GraphConvolution(input_dim=FLAGS.hidden1,
+                                                   output_dim=FLAGS.hidden2,
+                                                   adj=adj,
+                                                   act=lambda x: x,
+                                                   dropout=self.dropout,
+                                                   logging=self.logging,
+                                                   name='e_dense_2_{}'.format(hop_num))(self.noise)
+                emb_list.append(embeddings)
 
-            self.embeddings = GraphConvolution(input_dim=FLAGS.hidden1,
-                                               output_dim=FLAGS.hidden2,
-                                               adj=self.adj,
-                                               act=lambda x: x,
-                                               dropout=self.dropout,
-                                               logging=self.logging,
-                                               name='e_dense_2')(self.noise)
+            # simple attention
+            atts = []
+            for hop_num, embed in enumerate(emb_list):
+                # 'alpha' shape: [n_vertices, 1]
+                alpha = Attention(input_dim=FLAGS.hidden2,
+                                  output_dim=1,
+                                  dropout=self.dropout,
+                                  logging=self.logging,
+                                  name='e_attent_{}'.format(hop_num))(embed)
+                atts.append(alpha)
+            # cal attention weight
+            att_sum = 0
+            for att in atts:
+                att_sum += tf.exp(att)
+            alphas = []
+            for att in atts:
+                alphas.append(tf.exp(att)/att_sum)
+            self.embeddings = 0
+            for alpha, embed in zip(alphas, emb_list):
+                self.embeddings += tf.multiply(alpha, embed)
 
             self.reconstructions = InnerProductDecoder(input_dim=FLAGS.hidden2,
                                                        act=lambda x: x,

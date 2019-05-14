@@ -8,10 +8,10 @@ from preprocessing import preprocess_graph, sparse_to_tuple, mask_test_edges, co
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 
-def get_placeholder(adj):
+def get_placeholder(adj, hop_num):
     placeholders = {
         'features': tf.sparse_placeholder(tf.float32),
-        'adj': tf.sparse_placeholder(tf.float32),
+        'adjs': [tf.sparse_placeholder(tf.float32)] * hop_num,
         'adj_orig': tf.sparse_placeholder(tf.float32),
         'dropout': tf.placeholder_with_default(0., shape=()),
         'real_distribution': tf.placeholder(dtype=tf.float32, shape=[adj[2][1], FLAGS.hidden2],
@@ -29,38 +29,41 @@ def get_model(placeholders, num_features, features_nonzero):
     return d_real, discriminator, model
 
 # todo try one layer
-def format_data(data_name):
+def format_data(data_name, hop_num):
     # Load data
-    adj, features, adj_orig = load_data(data_name, layer=0)
+    adjs, features, adj_orig = load_data(data_name, hop_num=hop_num)
 
     # Store original adjacency matrix (without diagonal entries) for later
-    adj = adj - sp.dia_matrix((adj.diagonal()[np.newaxis, :], [0]), shape=adj.shape)
-    adj_orig = adj_orig - sp.dia_matrix((adj_orig.diagonal()[np.newaxis, :], [0]), shape=adj.shape)
+
+    adj_orig = adj_orig - sp.dia_matrix((adj_orig.diagonal()[np.newaxis, :], [0]), shape=adj_orig.shape)
+    adj_orig = sparse_to_tuple(adj_orig)
+    num_nodes = adj_orig[2][1]
+
+    pos_weight = float(num_nodes * num_nodes - adj_orig[1].sum()) / adj_orig[1].sum()
+    norm = num_nodes * num_nodes / float((num_nodes * num_nodes - adj_orig[1].sum()) * 2)
 
     if FLAGS.features == 0:
-        features = sp.identity(features.shape[0])  # featureless # todo why is identity
-
-    # Some preprocessing
-    adj_norm = preprocess_graph(adj)
-    adj = sparse_to_tuple(adj)
-    adj_orig = sparse_to_tuple(adj_orig)
-    num_nodes = adj[2][1]
-
+        features = sp.identity(features.shape[0])  # featureless
     features = sparse_to_tuple(features.tocoo())
     num_features = features[2][1]
     features_nonzero = features[1].shape[0]
 
-    pos_weight = float(num_nodes * num_nodes - adj[1].sum()) / adj[1].sum()
-    norm = num_nodes * num_nodes / float((num_nodes * num_nodes - adj[1].sum()) * 2)
+    adj_norms = []
+    # Some preprocessing
+    for adj in adjs:
+        adj = adj - sp.dia_matrix((adj.diagonal()[np.newaxis, :], [0]), shape=adj.shape)
+        adj_norm = preprocess_graph(adj)
+        adj_norms.append(adj_norm)
 
     feas = {'adj': adj_orig,
             'features': features,
-            'adj_norm': adj_norm,
+            'adj_norms': adj_norms,
             'num_nodes': num_nodes,
             'num_features': num_features,
             'features_nonzero': features_nonzero,
             'pos_weight': pos_weight,
-            'norm': norm}
+            'norm': norm,
+            'hop_num': hop_num}
 
     return feas
 
@@ -75,9 +78,9 @@ def get_optimizer(model, discriminator, placeholders, pos_weight, norm, d_real):
                       d_fake=d_fake)
     return opt
 
-def update(model, opt, sess, adj_norm, adj_label, features, placeholders, adj):
+def update(model, opt, sess, adj_norms, adj_label, features, placeholders, adj):
     # Construct feed dictionary
-    feed_dict = construct_feed_dict(adj_norm, adj_label, features, placeholders)
+    feed_dict = construct_feed_dict(adj_norms, adj_label, features, placeholders)
     feed_dict.update({placeholders['dropout']: FLAGS.dropout})
 
     feed_dict.update({placeholders['dropout']: 0})
@@ -96,8 +99,3 @@ def update(model, opt, sess, adj_norm, adj_label, features, placeholders, adj):
 
     return emb, avg_cost
 
-
-# def retrieve_name(var):
-#     callers_local_vars = inspect.currentframe().f_back.f_locals.items()
-#     print([var_name for var_name, var_val in callers_local_vars if var_val is var])
-#     return [var_name for var_name, var_val in callers_local_vars if var_val is var][0]

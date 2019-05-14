@@ -14,13 +14,14 @@ class Train_Runner():
     def __init__(self, settings):
         self.data_name = settings['data_name']
         self.iteration = settings['iterations']
+        self.hop_num = settings['hop_num']
 
     def erun(self):
         # formatted data
-        feas = format_data(self.data_name)
+        feas = format_data(self.data_name, self.hop_num)
 
         # Define placeholders
-        placeholders = get_placeholder(feas['adj'])
+        placeholders = get_placeholder(feas['adj'], feas['hop_num'])
 
         # construct model
         d_real, discriminator, ae_model = get_model(placeholders, feas['num_features'], feas['features_nonzero'])
@@ -34,7 +35,7 @@ class Train_Runner():
 
         # Train model
         for epoch in range(self.iteration):
-            emb, avg_cost = update(ae_model, opt, sess, feas['adj_norm'], feas['adj'], feas['features'], placeholders, feas['adj'])
+            emb, avg_cost = update(ae_model, opt, sess, feas['adj_norms'], feas['adj'], feas['features'], placeholders, feas['adj'])
             print(avg_cost)
         print(emb)
 

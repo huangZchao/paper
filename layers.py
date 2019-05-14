@@ -120,3 +120,18 @@ class InnerProductDecoder(Layer):
         return outputs
 
 
+class Attention(Layer):
+    """Attention model layer. """
+    def __init__(self, input_dim, output_dim, dropout=0., act=tf.nn.sigmoid, **kwargs):
+        super(Attention, self).__init__(**kwargs)
+        with tf.variable_scope(self.name + '_vars'):
+            self.vars['weights'] = weight_variable_glorot(input_dim, output_dim, name="weights")
+        self.dropout = dropout
+        self.act = act
+
+    def _call(self, inputs):
+        x = inputs
+        x = tf.nn.dropout(x, 1-self.dropout)
+        x = tf.matmul(x, self.vars['weights'])
+        outputs = self.act(x)
+        return outputs
