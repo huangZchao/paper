@@ -19,6 +19,7 @@ class Train_Runner():
 
     def erun(self):
         # formatted data
+        # ok!!
         feas = format_data(self.data_name, self.hop_num)
 
         # Define placeholders
@@ -37,6 +38,6 @@ class Train_Runner():
         # Train model
         for epoch in range(self.iteration):
             emb, avg_cost = update(ae_model, opt, sess, feas['adj_norms'], feas['adj'], feas['features'], placeholders, feas['adj'])
-            print(avg_cost)
+            print epoch
         np.savetxt('/home/huawei/risehuang/paper_2/dataset/embedding/{}.emb'.format(self.data_name), emb)
 

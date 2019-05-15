@@ -3,7 +3,7 @@ import settings
 from train import Train_Runner
 
 
-dataname = 'karate-mirrored'
+dataname = 'brazil-airports'
 
 settings = settings.get_settings(dataname)
 

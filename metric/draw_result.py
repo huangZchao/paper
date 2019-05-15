@@ -1,24 +1,7 @@
-import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
 
 dataname = 'karate-mirrored'
-
-# orig_graph = []
-# path = '/home/huawei/risehuang/paper_2/dataset/struct_similarity/{}/{}.edgelist'.format(dataname, dataname)
-# with open(path) as file:
-#     for line in file:
-#         head, tail = [int(x) for x in line.split()]
-#         orig_graph.append([head, tail])
-#
-# orig_graph = np.array(orig_graph)
-# n = np.arange(np.max(orig_graph))
-# print(n)
-# fig, ax = plt.subplots()
-# ax.scatter(orig_graph[:, 0], orig_graph[:, 1])
-#
-# for i, txt in enumerate(n):
-#     ax.annotate(txt, (orig_graph[i][0], orig_graph[i][1]))
 
 nodes = np.loadtxt('/home/huawei/risehuang/paper_2/dataset/embedding/{}.emb'.format(dataname))
 
@@ -29,11 +12,17 @@ pairs = np.reshape(pairs, [-1, 2])
 for pair in pairs:
     x1 = pair[0]-1
     x2 = pair[1]-1
-    print(x1, x2)
     ax.scatter(nodes[[x1, x2], 0], nodes[[x1, x2], 1])
-
 n = np.arange(1, len(nodes)+1)
 for i, txt in enumerate(n):
     ax.annotate(txt, (nodes[i][0], nodes[i][1]))
+
+# labels = np.loadtxt('/home/huawei/risehuang/paper_2/dataset/struct_similarity/{}/labels-{}.txt'.format(dataname, dataname))
+# for value in [0, 1, 2, 3]:
+#     idx = list(map(int, labels[np.where(labels[:, 1]==value)][:, 0]))
+#     ax.scatter(nodes[idx, 0], nodes[idx, 1])
+#
+#     for i in idx:
+#         ax.annotate(i, (nodes[i][0], nodes[i][1]))
 
 plt.show()

@@ -14,7 +14,7 @@ flags.DEFINE_float('dropout', 0., 'Dropout rate (1 - keep probability).')
 flags.DEFINE_integer('features', 0, 'Whether to use features (1) or not (0).')
 flags.DEFINE_integer('seed', 50, 'seed for fixing the results.')
 flags.DEFINE_integer('iterations', 50, 'number of iterations.')
-flags.DEFINE_integer('hop_num', 6, 'number of hop neighbor.')
+flags.DEFINE_integer('hop_num', 5, 'number of hop neighbor.')
 
 def get_settings(dataname):
     iterations = FLAGS.iterations

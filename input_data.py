@@ -38,6 +38,8 @@ def load_data(dataset, hop_num):
             graph.add_weighted_edges_from([(int(k[0]), int(k[1]), v)])
 
         adj = nx.adjacency_matrix(graph)
+
+        print adj.shape
         adjs.append(adj)
 
     return adjs, features, adj_orig

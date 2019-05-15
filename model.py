@@ -76,6 +76,7 @@ class ARGA(Model):
                 emb_list.append(embeddings)
 
             # simple attention
+            # todo bad attention weight cal
             atts = []
             for hop_num, embed in enumerate(emb_list):
                 # 'alpha' shape: [n_vertices, 1]

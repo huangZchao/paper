@@ -24,8 +24,12 @@ def construct_feed_dict(adj_normalizeds, adj, features, placeholders):
     # construct feed dictionary
     feed_dict = dict()
     feed_dict.update({placeholders['features']: features})
-    feed_dict.update({i: d for i, d in zip(placeholders['adjs'], adj_normalizeds)})
     feed_dict.update({placeholders['adj_orig']: adj})
+    for i, d in zip(placeholders['adjs'], adj_normalizeds):
+        # print '='*20
+        # print i
+        # print d
+        feed_dict.update({i: d})
     return feed_dict
 
 

@@ -11,7 +11,7 @@ FLAGS = flags.FLAGS
 def get_placeholder(adj, hop_num):
     placeholders = {
         'features': tf.sparse_placeholder(tf.float32),
-        'adjs': [tf.sparse_placeholder(tf.float32)] * hop_num,
+        'adjs': [tf.sparse_placeholder(tf.float32, name='adjs_{}'.format(i)) for i in range(hop_num)],
         'adj_orig': tf.sparse_placeholder(tf.float32),
         'dropout': tf.placeholder_with_default(0., shape=()),
         'real_distribution': tf.placeholder(dtype=tf.float32, shape=[adj[2][1], FLAGS.hidden2],
