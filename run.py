@@ -3,7 +3,7 @@ import settings
 from train import Train_Runner
 
 
-dataname = 'barbell'       # 'cora' or 'citeseer' or 'pubmed'
+dataname = 'karate-mirrored'
 
 settings = settings.get_settings(dataname)
 

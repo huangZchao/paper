@@ -30,13 +30,14 @@ def load_data(dataset, hop_num):
     adjs = []
     for i in range(hop_num):
         graph = nx.Graph()
+        for node in range(1, nx.number_of_nodes(orig_graph)+1):
+            graph.add_node(node)
         path = '/home/huawei/risehuang/paper_2/dataset/struct_similarity/{}/weights_distances-layer-{}.pickle'.format(dataset, i)
         graph_dict = pkl.load(open(path, 'rb'))
         for k, v in graph_dict.items():
             graph.add_weighted_edges_from([(int(k[0]), int(k[1]), v)])
 
         adj = nx.adjacency_matrix(graph)
-
         adjs.append(adj)
 
     return adjs, features, adj_orig

@@ -1,4 +1,5 @@
 import os
+import numpy as np
 # Train on CPU (hide GPU) due to memory constraints
 os.environ['CUDA_VISIBLE_DEVICES'] = ""
 
@@ -37,5 +38,5 @@ class Train_Runner():
         for epoch in range(self.iteration):
             emb, avg_cost = update(ae_model, opt, sess, feas['adj_norms'], feas['adj'], feas['features'], placeholders, feas['adj'])
             print(avg_cost)
-        print(emb)
+        np.savetxt('/home/huawei/risehuang/paper_2/dataset/embedding/{}.emb'.format(self.data_name), emb)
 
