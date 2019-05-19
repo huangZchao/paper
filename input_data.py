@@ -26,20 +26,28 @@ def load_data(dataset, hop_num):
     adj_orig = nx.adjacency_matrix(orig_graph)
 
     features = adj_orig
+    print 'adj_orig & feature shape: ', adj_orig.shape
 
     adjs = []
     for i in range(hop_num):
         graph = nx.Graph()
+
+        # todo karate
         for node in range(1, nx.number_of_nodes(orig_graph)+1):
+        # other network
+        # for node in range(0, nx.number_of_nodes(orig_graph)):
             graph.add_node(node)
+
         path = '/home/huawei/risehuang/paper_2/dataset/struct_similarity/{}/weights_distances-layer-{}.pickle'.format(dataset, i)
         graph_dict = pkl.load(open(path, 'rb'))
+        print 'len of different graph edges: ', len(graph_dict.keys())
         for k, v in graph_dict.items():
             graph.add_weighted_edges_from([(int(k[0]), int(k[1]), v)])
 
         adj = nx.adjacency_matrix(graph)
-
-        print adj.shape
         adjs.append(adj)
+    for adj in adjs:
+        print 'adj_norm: ', adj.shape
+
 
     return adjs, features, adj_orig

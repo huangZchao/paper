@@ -5,9 +5,10 @@ from sklearn.linear_model import LogisticRegression
 dataname = 'europe-airports'
 
 nodes = np.loadtxt('/home/huawei/risehuang/paper_2/dataset/embedding/{}.emb'.format(dataname))
+print nodes.shape
 labels = np.loadtxt('/home/huawei/risehuang/paper_2/dataset/struct_similarity/{}/labels-{}.txt'.format(dataname, dataname))
 
-random_state = 20100
+random_state = 2014
 # label 0
 labels_0 = labels[np.where(labels[:, 1]==0)]
 idx_0 = list(map(int, labels_0[:, 0]))

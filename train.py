@@ -1,7 +1,7 @@
 import os
 import numpy as np
 # Train on CPU (hide GPU) due to memory constraints
-os.environ['CUDA_VISIBLE_DEVICES'] = ""
+# os.environ['CUDA_VISIBLE_DEVICES'] = ""
 
 import tensorflow as tf
 from constructor import get_placeholder, get_model, format_data, get_optimizer, update
@@ -19,7 +19,6 @@ class Train_Runner():
 
     def erun(self):
         # formatted data
-        # ok!!
         feas = format_data(self.data_name, self.hop_num)
 
         # Define placeholders
@@ -37,7 +36,9 @@ class Train_Runner():
 
         # Train model
         for epoch in range(self.iteration):
-            emb, avg_cost = update(ae_model, opt, sess, feas['adj_norms'], feas['adj'], feas['features'], placeholders, feas['adj'])
-            print epoch
+            emb, avg_cost, feed_dict = update(ae_model, opt, sess, feas['adj_norms'], feas['adj'], feas['features'], placeholders, feas['adj'])
+            print avg_cost
+
+        # print sess.run([ae_model.alphas], feed_dict=feed_dict)
         np.savetxt('/home/huawei/risehuang/paper_2/dataset/embedding/{}.emb'.format(self.data_name), emb)
 

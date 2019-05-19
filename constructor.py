@@ -97,5 +97,5 @@ def update(model, opt, sess, adj_norms, adj_label, features, placeholders, adj):
 
     avg_cost = reconstruct_loss
 
-    return emb, avg_cost
+    return emb, avg_cost, feed_dict
 

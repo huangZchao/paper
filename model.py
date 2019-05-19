@@ -90,11 +90,11 @@ class ARGA(Model):
             att_sum = 0
             for att in atts:
                 att_sum += tf.exp(att)
-            alphas = []
+            self.alphas = []
             for att in atts:
-                alphas.append(tf.exp(att)/att_sum)
+                self.alphas.append(tf.exp(att)/att_sum)
             self.embeddings = 0
-            for alpha, embed in zip(alphas, emb_list):
+            for alpha, embed in zip(self.alphas, emb_list):
                 self.embeddings += tf.multiply(alpha, embed)
 
             self.reconstructions = InnerProductDecoder(input_dim=FLAGS.hidden2,
