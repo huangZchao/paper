@@ -21,12 +21,16 @@ def preprocess_graph(adj):
     return sparse_to_tuple(adj_normalized)
 
 
-def construct_feed_dict(adj_normalizeds, adj, features, placeholders):
+def construct_feed_dict(struct_adj_norms, struct_adj_origs, struct_features, temporal_adj_origs, placeholders):
     # construct feed dictionary
     feed_dict = dict()
-    feed_dict.update({placeholders['features']: features})
-    feed_dict.update({placeholders['adj_orig']: adj})
-    for i, d in zip(placeholders['adjs'], adj_normalizeds):
+    for i, d in zip(placeholders['struct_adj_norms'], struct_adj_norms):
+        feed_dict.update({i: d})
+    for i, d in zip(placeholders['struct_adj_origs'], struct_adj_origs):
+        feed_dict.update({i: d})
+    for i, d in zip(placeholders['struct_features'], struct_features):
+        feed_dict.update({i: d})
+    for i, d in zip(placeholders['temporal_adj_origs'], temporal_adj_origs):
         feed_dict.update({i: d})
     return feed_dict
 

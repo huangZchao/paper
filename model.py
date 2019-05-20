@@ -43,11 +43,11 @@ class Model(object):
 class GCN(Model):
     def __init__(self, placeholders, feature_dim, features_nonzeros, num_node, seq_len, num_channel, **kwargs):
         super(GCN, self).__init__(**kwargs)
-
-        self.inputs = placeholders['features']
-        self.input_dim = feature_dim
+        self.struct_features = placeholders['struct_features']
+        self.struct_adj_norms = placeholders['struct_adj_norms']
         self.features_nonzeros = features_nonzeros
-        self.adj_norms = placeholders['adj_norms']
+        self.feature_dim = feature_dim
+
         self.dropout = placeholders['dropout']
         self.num_node = num_node
         self.seq_len = seq_len
@@ -58,22 +58,22 @@ class GCN(Model):
         with tf.variable_scope('Encoder', reuse=None):
             self.embeddings = []
             self.reconstructions = []
-            for ts, (adj_norm, inputs) in enumerate(zip(self.adj_norms, self.inputs)):
+            for ts, (struct_adj_norm, struct_feature) in enumerate(zip(self.struct_adj_norms, self.struct_features)):
                 features_nonzero = self.features_nonzeros[ts]
-                self.hidden1 = GraphConvolutionSparse(input_dim=self.input_dim,
+                self.hidden1 = GraphConvolutionSparse(input_dim=self.feature_dim,
                                                       output_dim=FLAGS.hidden1,
-                                                      adj=adj_norm,
+                                                      adj=struct_adj_norm,
                                                       features_nonzero=features_nonzero,
                                                       act=tf.nn.relu,
                                                       dropout=self.dropout,
                                                       logging=self.logging,
-                                                      name='e_dense_1_{}'.format(ts))(inputs)
+                                                      name='e_dense_1_{}'.format(ts))(struct_feature)
 
                 self.noise = gaussian_noise_layer(self.hidden1, 0.1)
 
                 embeddings = GraphConvolution(input_dim=FLAGS.hidden1,
                                                    output_dim=FLAGS.hidden2,
-                                                   adj=adj_norm,
+                                                   adj=struct_adj_norm,
                                                    act=lambda x: x,
                                                    dropout=self.dropout,
                                                    logging=self.logging,
@@ -84,37 +84,21 @@ class GCN(Model):
                                                            act=lambda x: x,
                                                            logging=self.logging)(embeddings)
 
-                self.embeddings.append(tf.reshape(embeddings, [1, 1, -1]))
+                self.embeddings.append(tf.reshape(embeddings, [1, 1, self.num_node*FLAGS.hidden2]))
                 self.reconstructions.append(reconstructions)
 
             # TCN
             sequence = tf.concat(self.embeddings, axis=1, name='concat_embedding')
             sequence_out = TCN(num_channels=[self.num_node*FLAGS.hidden3]*self.num_channel, sequence_length=self.seq_len)(sequence)
+            sequence_out = tf.reshape(sequence_out, [-1, self.seq_len, self.num_node, FLAGS.hidden3])
             self.reconstructions_tss = []
+
             for ts in range(self.seq_len):
                 reconstructions_ts = InnerProductDecoder(input_dim=FLAGS.hidden2,
                                                          act=lambda x: x,
                                                          logging=self.logging)(sequence_out[0, ts, :, :])
                 self.reconstructions_tss.append(reconstructions_ts)
 
-
-def dense(x, n1, n2, name):
-    """
-    Used to create a dense layer.
-    :param x: input tensor to the dense layer
-    :param n1: no. of input neurons
-    :param n2: no. of output neurons
-    :param name: name of the entire dense layer.i.e, variable scope name.
-    :return: tensor with shape [batch_size, n2]
-    """
-    with tf.variable_scope(name, reuse=None):
-        # np.random.seed(1)
-        tf.set_random_seed(1)
-        weights = tf.get_variable("weights", shape=[n1, n2],
-                                  initializer=tf.random_normal_initializer(mean=0., stddev=0.01))
-        bias = tf.get_variable("bias", shape=[n2], initializer=tf.constant_initializer(0.0))
-        out = tf.add(tf.matmul(x, weights), bias, name='matmul')
-        return out
 
 def gaussian_noise_layer(input_layer, std):
     noise = tf.random_normal(shape=tf.shape(input_layer), mean=0.0, stddev=std, dtype=tf.float32)

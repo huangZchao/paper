@@ -121,6 +121,8 @@ class InnerProductDecoder(Layer):
 
 
 layers = tf.keras.layers
+
+
 class TemporalBlock(Layer):
     def __init__(self, dilation_rate, nb_filters, kernel_size,
                  padding, dropout_rate=0.0):
@@ -151,14 +153,8 @@ class TemporalBlock(Layer):
         x = self.conv1(x)
         x = self.batch1(x)
         x = self.ac1(x)
-        # x = self.drop1(x)
 
-        # x = self.conv2(x)
-        # x = self.batch2(x)
-        # x = self.ac2(x)
-        # x = self.drop2(x) if training else x
-
-        if prev_x.shape[-1] != x.shape[-1]:    # match the dimention
+        if prev_x.shape[-1] != x.shape[-1]:    # match the dimension
             prev_x = self.downsample(prev_x)
         assert prev_x.shape == x.shape
 
@@ -170,17 +166,18 @@ class TemporalConvNet(Layer):
         super(TemporalConvNet, self).__init__()
         assert isinstance(num_channels, list)
 
-        model = tf.keras.models.Sequential()
-
+        models = []
         num_levels = len(num_channels)
         for i in range(num_levels):
             dilation_rate = 2 ** i
-            model.add(TemporalBlock(dilation_rate, num_channels[i], kernel_size,
+            models.append(TemporalBlock(dilation_rate, num_channels[i], kernel_size,
                                     padding='causal'))
-        self.network = model
+        self.networks = models
 
     def _call(self, x):
-        return self.network(x)
+        for network in self.networks:
+            x = network(x)
+        return x
 
 
 class TCN(Layer):
