@@ -1,4 +1,4 @@
-from layers import GraphConvolution, GraphConvolutionSparse, InnerProductDecoder, Attention
+from layers import GraphConvolution, GraphConvolutionSparse, InnerProductDecoder, TCN
 import tensorflow as tf
 
 flags = tf.app.flags
@@ -40,66 +40,62 @@ class Model(object):
         pass
 
 
-class ARGA(Model):
-    def __init__(self, placeholders, num_features, features_nonzero, **kwargs):
-        super(ARGA, self).__init__(**kwargs)
+class GCN(Model):
+    def __init__(self, placeholders, feature_dim, features_nonzeros, num_node, seq_len, num_channel, **kwargs):
+        super(GCN, self).__init__(**kwargs)
 
         self.inputs = placeholders['features']
-        self.input_dim = num_features
-        self.features_nonzero = features_nonzero
-        self.adjs = placeholders['adjs']
+        self.input_dim = feature_dim
+        self.features_nonzeros = features_nonzeros
+        self.adj_norms = placeholders['adj_norms']
         self.dropout = placeholders['dropout']
+        self.num_node = num_node
+        self.seq_len = seq_len
+        self.num_channel = num_channel
         self.build()
 
     def _build(self):
-        emb_list = []
         with tf.variable_scope('Encoder', reuse=None):
-            for hop_num, adj in enumerate(self.adjs):
+            self.embeddings = []
+            self.reconstructions = []
+            for ts, (adj_norm, inputs) in enumerate(zip(self.adj_norms, self.inputs)):
+                features_nonzero = self.features_nonzeros[ts]
                 self.hidden1 = GraphConvolutionSparse(input_dim=self.input_dim,
                                                       output_dim=FLAGS.hidden1,
-                                                      adj=adj,
-                                                      features_nonzero=self.features_nonzero,
+                                                      adj=adj_norm,
+                                                      features_nonzero=features_nonzero,
                                                       act=tf.nn.relu,
                                                       dropout=self.dropout,
                                                       logging=self.logging,
-                                                      name='e_dense_1_{}'.format(hop_num))(self.inputs)
+                                                      name='e_dense_1_{}'.format(ts))(inputs)
 
                 self.noise = gaussian_noise_layer(self.hidden1, 0.1)
 
                 embeddings = GraphConvolution(input_dim=FLAGS.hidden1,
                                                    output_dim=FLAGS.hidden2,
-                                                   adj=adj,
+                                                   adj=adj_norm,
                                                    act=lambda x: x,
                                                    dropout=self.dropout,
                                                    logging=self.logging,
-                                                   name='e_dense_2_{}'.format(hop_num))(self.noise)
-                emb_list.append(embeddings)
+                                                   name='e_dense_2_{}'.format(ts))(self.noise)
 
-            # simple attention
-            # todo bad attention weight cal
-            atts = []
-            for hop_num, embed in enumerate(emb_list):
-                # 'alpha' shape: [n_vertices, 1]
-                alpha = Attention(input_dim=FLAGS.hidden2,
-                                  output_dim=1,
-                                  dropout=self.dropout,
-                                  logging=self.logging,
-                                  name='e_attent_{}'.format(hop_num))(embed)
-                atts.append(alpha)
-            # cal attention weight
-            att_sum = 0
-            for att in atts:
-                att_sum += tf.exp(att)
-            self.alphas = []
-            for att in atts:
-                self.alphas.append(tf.exp(att)/att_sum)
-            self.embeddings = 0
-            for alpha, embed in zip(self.alphas, emb_list):
-                self.embeddings += tf.multiply(alpha, embed)
+                # for auxilary loss
+                reconstructions = InnerProductDecoder(input_dim=FLAGS.hidden2,
+                                                           act=lambda x: x,
+                                                           logging=self.logging)(embeddings)
 
-            self.reconstructions = InnerProductDecoder(input_dim=FLAGS.hidden2,
-                                                       act=lambda x: x,
-                                                       logging=self.logging)(self.embeddings)
+                self.embeddings.append(tf.reshape(embeddings, [1, 1, -1]))
+                self.reconstructions.append(reconstructions)
+
+            # TCN
+            sequence = tf.concat(self.embeddings, axis=1, name='concat_embedding')
+            sequence_out = TCN(num_channels=[self.num_node*FLAGS.hidden3]*self.num_channel, sequence_length=self.seq_len)(sequence)
+            self.reconstructions_tss = []
+            for ts in range(self.seq_len):
+                reconstructions_ts = InnerProductDecoder(input_dim=FLAGS.hidden2,
+                                                         act=lambda x: x,
+                                                         logging=self.logging)(sequence_out[0, ts, :, :])
+                self.reconstructions_tss.append(reconstructions_ts)
 
 
 def dense(x, n1, n2, name):
@@ -119,25 +115,6 @@ def dense(x, n1, n2, name):
         bias = tf.get_variable("bias", shape=[n2], initializer=tf.constant_initializer(0.0))
         out = tf.add(tf.matmul(x, weights), bias, name='matmul')
         return out
-
-
-class Discriminator(Model):
-    def __init__(self, **kwargs):
-        super(Discriminator, self).__init__(**kwargs)
-
-        self.act = tf.nn.relu
-
-    def construct(self, inputs, reuse = False):
-        # with tf.name_scope('Discriminator'):
-        with tf.variable_scope('Discriminator'):
-            if reuse:
-                tf.get_variable_scope().reuse_variables()
-            # np.random.seed(1)
-            tf.set_random_seed(1)
-            dc_den1 = tf.nn.relu(dense(inputs, FLAGS.hidden2, FLAGS.hidden3, name='dc_den1'))
-            dc_den2 = tf.nn.relu(dense(dc_den1, FLAGS.hidden3, FLAGS.hidden1, name='dc_den2'))
-            output = dense(dc_den2, FLAGS.hidden1, 1, name='dc_output')
-            return output
 
 def gaussian_noise_layer(input_layer, std):
     noise = tf.random_normal(shape=tf.shape(input_layer), mean=0.0, stddev=std, dtype=tf.float32)
