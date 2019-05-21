@@ -81,7 +81,6 @@ class GCN(Model):
 
                 # for auxilary loss
                 reconstructions = InnerProductDecoder(input_dim=FLAGS.hidden2,
-                                                           act=lambda x: x,
                                                            logging=self.logging)(embeddings)
 
                 self.embeddings.append(tf.reshape(embeddings, [1, 1, self.num_node*FLAGS.hidden2]))
@@ -95,7 +94,6 @@ class GCN(Model):
 
             for ts in range(self.seq_len):
                 reconstructions_ts = InnerProductDecoder(input_dim=FLAGS.hidden2,
-                                                         act=lambda x: x,
                                                          logging=self.logging)(sequence_out[0, ts, :, :])
                 self.reconstructions_tss.append(reconstructions_ts)
 

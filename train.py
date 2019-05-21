@@ -1,5 +1,6 @@
 import tensorflow as tf
 from constructor import get_placeholder, format_data, get_model, get_optimizer, update, predict
+import numpy as np
 
 # Settings
 flags = tf.app.flags
@@ -36,6 +37,8 @@ class Train_Runner():
                                               feas['struct_features'], feas['temporal_adj_origs'], placeholders)
             print('total ', avg_cost, 'struct ', struct_loss, 'temporal ', temporal_loss)
 
-        reconstruct = predict(ae_model, sess, feas, self.seq_len, placeholders)
-        print(reconstruct[-1])
+        embeddings = predict(ae_model, sess, feas, self.seq_len, placeholders)
+        print(embeddings)
+        embeddings = np.reshape(np.array(embeddings)[0, -1, :], [feas['num_node'], FLAGS.hidden2])
+        np.savetxt('/home/huawei/rise/paper_2/dataset/embedding/{}.txt'.format(self.data_name), embeddings)
 

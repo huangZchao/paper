@@ -145,4 +145,4 @@ def predict(model, sess, feas, seq_len, placeholders):
         feed_dict.update({i: d})
     for i, d in zip(placeholders['struct_features'], features):
         feed_dict.update({i: d})
-    return sess.run([model.reconstructions_tss], feed_dict=feed_dict)
+    return sess.run([model.embeddings], feed_dict=feed_dict)
