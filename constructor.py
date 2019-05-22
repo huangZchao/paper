@@ -137,8 +137,8 @@ def update(opt, sess, struct_adj_norms, struct_adj_origs, struct_features, tempo
     return reconstruct_loss, feed_dict, struct_cost, temporal_cost
 
 def predict(model, sess, feas, seq_len, placeholders):
-    adj_norms = feas['adj_norms'][1: 1+seq_len]
-    features = feas['features'][1: 1+seq_len]
+    adj_norms = feas['adj_norms'][2: 2+seq_len]
+    features = feas['features'][2: 2+seq_len]
 
     feed_dict = dict()
     for i, d in zip(placeholders['struct_adj_norms'], adj_norms):
@@ -146,3 +146,6 @@ def predict(model, sess, feas, seq_len, placeholders):
     for i, d in zip(placeholders['struct_features'], features):
         feed_dict.update({i: d})
     return sess.run([model.embeddings], feed_dict=feed_dict)
+
+if __name__ == '__main__':
+    format_data('SYN-VAR', 3)

@@ -14,7 +14,7 @@ flags.DEFINE_float('dropout', 0., 'Dropout rate (1 - keep probability).')
 flags.DEFINE_integer('features', 0, 'Whether to use features (1) or not (0).')
 flags.DEFINE_integer('seed', 50, 'seed for fixing the results.')
 flags.DEFINE_integer('iterations', 100, 'number of iterations.')
-flags.DEFINE_integer('seq_len', 3, 'time stamp for each train.')
+flags.DEFINE_integer('seq_len', 8, 'time stamp for each train.')
 flags.DEFINE_integer('num_channel', 3, 'num channel of TCN.')
 
 

@@ -120,8 +120,22 @@ class InnerProductDecoder(Layer):
         return outputs
 
 
-layers = tf.keras.layers
+class Dense(Layer):
+    def __init__(self, input_dim, classes, **kwargs):
+        super(Dense, self).__init__(**kwargs)
+        self.input_dim = input_dim
+        self.classes = classes
 
+    def _call(self, inputs):
+        tf.set_random_seed(1)
+        weights = tf.get_variable("weights", shape=[self.input_dim, self.classes],
+                                  initializer=tf.random_normal_initializer(mean=0., stddev=0.01))
+        bias = tf.get_variable("bias", shape=[self.classes], initializer=tf.constant_initializer(0.0))
+        out = tf.add(tf.matmul(inputs, weights), bias, name='matmul')
+        return out
+
+
+layers = tf.keras.layers
 
 class TemporalBlock(Layer):
     def __init__(self, dilation_rate, nb_filters, kernel_size,

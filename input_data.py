@@ -16,16 +16,21 @@ def sample_mask(idx, l):
 
 def load_data(dataset):
     path = '/home/huawei/rise/paper_2/dataset/dynamic_datasets/{}.mat'.format(dataset)
-    adjs = scio.loadmat(path)['dynamic_dataset']
+    adjs = scio.loadmat(path)['y']
 
     features = []
     adjs_ret = []
     for idx in range(adjs.shape[2]):
         adj = adjs[:, :, idx]
-        assert len(np.where(np.diag(adj)==1)[0]) == 0
+        if len(np.where(np.diag(adj)==1)[0]) != 0:
+            for i in range(len(adj)):
+                adj[i, i] = 0
         feature = np.eye(adj.shape[0])  # featureless
 
         adjs_ret.append(adj)
         features.append(feature)
 
     return adjs_ret, features
+
+if __name__ == '__main__':
+    load_data('SYN-VAR')

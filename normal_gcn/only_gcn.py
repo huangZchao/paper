@@ -1,5 +1,5 @@
 import tensorflow as tf
-from layers import GraphConvolution, GraphConvolutionSparse, InnerProductDecoder
+from layers import GraphConvolution, GraphConvolutionSparse, InnerProductDecoder, Dense
 import numpy as np
 from input_data import load_data
 from preprocessing import sparse_to_tuple, preprocess_graph
@@ -12,14 +12,24 @@ def gaussian_noise_layer(input_layer, std):
 # flags
 flags = tf.app.flags
 FLAGS = flags.FLAGS
-flags.DEFINE_string('data_name', 'football', 'name of data set.')
+flags.DEFINE_string('data_name', 'SYN-VAR', 'name of data set.')
 flags.DEFINE_float('learning_rate', .5*0.001, 'Initial learning rate.')
 flags.DEFINE_integer('hidden1', 32, 'Number of units in hidden layer 1.')
-flags.DEFINE_integer('hidden2', 64, 'Number of units in hidden layer 2.')
+flags.DEFINE_integer('hidden2', 32, 'Number of units in hidden layer 2.')
 flags.DEFINE_float('dropout', 0., 'Dropout rate (1 - keep probability).')
 flags.DEFINE_integer('features', 0, 'Whether to use features (1) or not (0).')
 flags.DEFINE_integer('seed', 50, 'seed for fixing the results.')
 flags.DEFINE_integer('iterations', 100, 'number of iterations.')
+
+# labels
+import scipy.io as scio
+labels = scio.loadmat('/home/huawei/rise/paper_2/dataset/dynamic_datasets/{}_labels.mat'.format(FLAGS.data_name))['labels'][0]
+def one_hot(row):
+    arr = np.zeros((len(labels), len(set(labels))))
+    for i in range(len(row)):
+        arr[i, row[i]-1] = 1
+    return arr
+labels = one_hot(labels)
 
 # preprocess
 adjs, features = load_data(FLAGS.data_name)
@@ -63,13 +73,15 @@ embeddings = GraphConvolution(input_dim=FLAGS.hidden1,
                                    act=lambda x: x,
                                    dropout=placeholders['dropout'])(noise)
 
-reconstructions = InnerProductDecoder(input_dim=FLAGS.hidden2)(embeddings)
-
-label = tf.reshape(tf.sparse_tensor_to_dense(placeholders['adj_orig'], validate_indices=False), [-1])
-
+# reconstructions = InnerProductDecoder(input_dim=FLAGS.hidden2, act=lambda x: x)(embeddings)
+# label = tf.reshape(tf.sparse_tensor_to_dense(placeholders['adj_orig'], validate_indices=False), [-1])
 # loss
-cost = norm * tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(logits=reconstructions, targets=label,
-                                                                      pos_weight=pos_weight))
+# cost = norm * tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(logits=reconstructions, targets=label,
+#                                                                       pos_weight=pos_weight))
+
+pred = Dense(FLAGS.hidden2, labels.shape[1])(embeddings)
+cost = norm * tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=labels))
+
 # optimizer
 optimizer = tf.train.AdamOptimizer(learning_rate=FLAGS.learning_rate)  # Adam Optimizer
 opt_op = optimizer.minimize(cost)
@@ -77,7 +89,7 @@ opt_op = optimizer.minimize(cost)
 # Initialize session
 sess = tf.Session()
 sess.run(tf.global_variables_initializer())
-for epoch in range(100):
+for epoch in range(FLAGS.iterations):
     _, reconstruct_loss, embedding = sess.run([opt_op, cost, embeddings], feed_dict={placeholders['adj_orig']: adj_orig,
                                                               placeholders['adj_norm']: adj_norm,
                                                               placeholders['feature']: feature})
