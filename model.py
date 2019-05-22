@@ -1,4 +1,4 @@
-from layers import GraphConvolution, GraphConvolutionSparse, InnerProductDecoder, TCN
+from layers import GraphConvolution, GraphConvolutionSparse, InnerProductDecoder, TCN, Dense
 import tensorflow as tf
 
 flags = tf.app.flags
@@ -81,20 +81,20 @@ class GCN(Model):
 
                 # for auxilary loss
                 reconstructions = InnerProductDecoder(input_dim=FLAGS.hidden2,
-                                                           logging=self.logging)(embeddings)
+                                                      logging=self.logging)(embeddings)
 
-                self.embeddings.append(tf.reshape(embeddings, [1, 1, self.num_node*FLAGS.hidden2]))
+                self.embeddings.append(tf.reshape(embeddings, [self.num_node, 1, FLAGS.hidden2]))
                 self.reconstructions.append(reconstructions)
 
             # TCN
             sequence = tf.concat(self.embeddings, axis=1, name='concat_embedding')
-            sequence_out = TCN(num_channels=[self.num_node*FLAGS.hidden3]*self.num_channel, sequence_length=self.seq_len)(sequence)
-            sequence_out = tf.reshape(sequence_out, [-1, self.seq_len, self.num_node, FLAGS.hidden3])
+            self.sequence_out = TCN(num_channels=[FLAGS.hidden3]*self.num_channel, sequence_length=self.seq_len)(sequence)
             self.reconstructions_tss = []
 
+            # Dense
             for ts in range(self.seq_len):
-                reconstructions_ts = InnerProductDecoder(input_dim=FLAGS.hidden2,
-                                                         logging=self.logging)(sequence_out[0, ts, :, :])
+                reconstructions_ts = Dense(input_dim=FLAGS.hidden3, classes=self.num_node)(self.sequence_out[:, ts, :])
+                reconstructions_ts = tf.reshape(reconstructions_ts, [-1])
                 self.reconstructions_tss.append(reconstructions_ts)
 
 

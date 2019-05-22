@@ -1,6 +1,7 @@
 import tensorflow as tf
 from constructor import get_placeholder, format_data, get_model, get_optimizer, update, predict
 import numpy as np
+from tensorflow.core.protobuf import config_pb2
 
 # Settings
 flags = tf.app.flags
@@ -28,8 +29,10 @@ class Train_Runner():
         opt = get_optimizer(ae_model, placeholders, feas, self.seq_len)
 
         # Initialize session
-        sess = tf.Session()
-        sess.run(tf.global_variables_initializer())
+        gpu_options = tf.GPUOptions(allow_growth=True)
+        sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+        sess.run(tf.global_variables_initializer(),
+                 options=config_pb2.RunOptions(report_tensor_allocations_upon_oom=True))
 
         # Train model
         for epoch in range(self.iteration):
@@ -38,7 +41,6 @@ class Train_Runner():
             print('total ', avg_cost, 'struct ', struct_loss, 'temporal ', temporal_loss)
 
         embeddings = predict(ae_model, sess, feas, self.seq_len, placeholders)
-        print(embeddings)
-        embeddings = np.reshape(np.array(embeddings)[0, -1, :], [feas['num_node'], FLAGS.hidden2])
+        embeddings = np.reshape(np.array(embeddings)[:, -1, :], [feas['num_node'], FLAGS.hidden3])
         np.savetxt('/home/huawei/rise/paper_2/dataset/embedding/{}.txt'.format(self.data_name), embeddings)
 

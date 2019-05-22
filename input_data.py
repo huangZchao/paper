@@ -16,7 +16,7 @@ def sample_mask(idx, l):
 
 def load_data(dataset):
     path = '/home/huawei/rise/paper_2/dataset/dynamic_datasets/{}.mat'.format(dataset)
-    adjs = scio.loadmat(path)['y']
+    adjs = scio.loadmat(path)['dynamic_dataset']
 
     features = []
     adjs_ret = []

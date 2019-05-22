@@ -132,7 +132,8 @@ def update(opt, sess, struct_adj_norms, struct_adj_origs, struct_features, tempo
     feed_dict = construct_feed_dict(struct_adj_norms, struct_adj_origs, struct_features, temporal_adj_origs, placeholders)
     feed_dict.update({placeholders['dropout']: FLAGS.dropout})
 
-    _, reconstruct_loss, struct_cost, temporal_cost = sess.run([opt.opt_op, opt.cost, opt.struct_cost, opt.temporal_cost], feed_dict=feed_dict)
+    _, reconstruct_loss, struct_cost, temporal_cost = sess.run([opt.opt_op, opt.cost, opt.struct_cost, opt.temporal_cost],
+                                                               feed_dict=feed_dict)
 
     return reconstruct_loss, feed_dict, struct_cost, temporal_cost
 
@@ -145,7 +146,7 @@ def predict(model, sess, feas, seq_len, placeholders):
         feed_dict.update({i: d})
     for i, d in zip(placeholders['struct_features'], features):
         feed_dict.update({i: d})
-    return sess.run([model.embeddings], feed_dict=feed_dict)
+    return sess.run(model.sequence_out, feed_dict=feed_dict)
 
 if __name__ == '__main__':
     format_data('SYN-VAR', 3)
