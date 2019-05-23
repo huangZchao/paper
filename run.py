@@ -3,7 +3,7 @@ import settings
 from train import Train_Runner
 
 
-dataname = 'SYN-VAR'
+dataname = 'SYN-FIX'
 
 settings = settings.get_settings(dataname)
 

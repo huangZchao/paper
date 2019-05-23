@@ -41,7 +41,7 @@ class Train_Runner():
             print('total ', avg_cost, 'struct ', struct_loss, 'temporal ', temporal_loss)
 
         embeddings = predict(ae_model, sess, feas, self.seq_len, placeholders)
-        embeddings = np.reshape(np.array(embeddings)[:, -1, :], [feas['num_node'], FLAGS.hidden3])
+        embeddings = np.reshape(np.array(embeddings)[:, -1, :], [feas['num_node'], FLAGS.hidden3[-1]])
         print(embeddings)
         np.savetxt('/home/huawei/rise/paper_2/dataset/embedding/{}.txt'.format(self.data_name), embeddings)
 

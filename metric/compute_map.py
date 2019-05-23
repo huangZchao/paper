@@ -83,7 +83,7 @@ if __name__ == '__main__':
     import networkx as nx
     from tqdm import tqdm
 
-    data_name = 'ca-cit-HepTh'
+    data_name = 'SYN-FIX'
     pred = np.loadtxt('/home/huawei/rise/paper_2/dataset/embedding/{}.txt'.format(data_name))
     # pred = scio.loadmat('/home/huawei/rise/paper_2/dataset/embedding/{}.mat'.format(data_name))['ans']
     label = scio.loadmat('/home/huawei/rise/paper_2/dataset/dynamic_datasets/{}.mat'.format(data_name))[

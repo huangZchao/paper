@@ -88,7 +88,7 @@ class GCN(Model):
 
             # TCN
             sequence = tf.concat(self.embeddings, axis=1, name='concat_embedding')
-            self.sequence_out = TCN(num_channels=[FLAGS.hidden3]*self.num_channel, sequence_length=self.seq_len)(sequence)
+            self.sequence_out = TCN(num_channels=[FLAGS.hidden3], sequence_length=self.seq_len)(sequence)
             self.reconstructions_tss = []
 
             # Dense
