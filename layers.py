@@ -131,7 +131,7 @@ class Dense(Layer):
         tf.set_random_seed(1)
         with tf.variable_scope('dense', reuse=tf.AUTO_REUSE):
             weights = tf.get_variable("weights", shape=[self.input_dim, self.classes],
-                                      initializer=tf.random_normal_initializer(mean=0., stddev=0.01), )
+                                      initializer=tf.random_normal_initializer(mean=0., stddev=0.01))
             bias = tf.get_variable("bias", shape=[self.classes], initializer=tf.constant_initializer(0.0))
         out = self.act(tf.add(tf.matmul(inputs, weights), bias, name='matmul'))
         return out
@@ -152,13 +152,6 @@ class TemporalBlock(Layer):
         self.batch1 = layers.BatchNormalization(axis=-1)
         self.ac1 = layers.Activation('relu')
         self.drop1 = layers.Dropout(rate=dropout_rate)
-
-        # block2
-        self.conv2 = layers.Conv1D(filters=nb_filters, kernel_size=kernel_size,
-                                   dilation_rate=dilation_rate, padding=padding, kernel_initializer=init)
-        self.batch2 = layers.BatchNormalization(axis=-1)
-        self.ac2 = layers.Activation('relu')
-        self.drop2 = layers.Dropout(rate=dropout_rate)
 
         self.downsample = layers.Conv1D(filters=nb_filters, kernel_size=1,
                                         padding='same', kernel_initializer=init)
