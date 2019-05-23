@@ -42,5 +42,6 @@ class Train_Runner():
 
         embeddings = predict(ae_model, sess, feas, self.seq_len, placeholders)
         embeddings = np.reshape(np.array(embeddings)[:, -1, :], [feas['num_node'], FLAGS.hidden3])
+        print(embeddings)
         np.savetxt('/home/huawei/rise/paper_2/dataset/embedding/{}.txt'.format(self.data_name), embeddings)
 
