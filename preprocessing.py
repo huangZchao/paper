@@ -21,7 +21,9 @@ def preprocess_graph(adj):
     return sparse_to_tuple(adj_normalized)
 
 
-def construct_feed_dict(struct_adj_norms, struct_adj_origs, struct_features, temporal_adj_origs, placeholders):
+def construct_feed_dict(struct_adj_norms, struct_adj_origs, struct_features, temporal_adj_origs,
+                        struct_pos_weights, struct_norms, temporal_pos_weights, temporal_norms,
+                        placeholders):
     # construct feed dictionary
     feed_dict = dict()
     for i, d in zip(placeholders['struct_adj_norms'], struct_adj_norms):
@@ -32,6 +34,12 @@ def construct_feed_dict(struct_adj_norms, struct_adj_origs, struct_features, tem
         feed_dict.update({i: d})
     for i, d in zip(placeholders['temporal_adj_origs'], temporal_adj_origs):
         feed_dict.update({i: d})
+
+    feed_dict.update({placeholders['struct_pos_weights']: struct_pos_weights})
+    feed_dict.update({placeholders['struct_norms']: struct_norms})
+    feed_dict.update({placeholders['temporal_pos_weights']: temporal_pos_weights})
+    feed_dict.update({placeholders['temporal_norms']: temporal_norms})
+
     return feed_dict
 
 
