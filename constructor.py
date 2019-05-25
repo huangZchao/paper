@@ -24,8 +24,8 @@ def get_placeholder(struct_adj_norms):
     return placeholders
 
 
-def get_model(placeholders, feature_dim, features_nonzeros, num_node, seq_len, num_channel):
-    model = GCN(placeholders, feature_dim, features_nonzeros, num_node, seq_len, num_channel)
+def get_model(placeholders, feature_dim, features_nonzeros, num_node, seq_len):
+    model = GCN(placeholders, feature_dim, features_nonzeros, num_node, seq_len)
     return model
 
 def format_data(data_name, seq_len):

@@ -23,7 +23,7 @@ class Train_Runner():
 
         # construct model
         ae_model = get_model(placeholders, feas['feature_dim'], feas['struct_features_nonzeros'],
-                             feas['num_node'], self.seq_len, FLAGS.num_channel)
+                             feas['num_node'], self.seq_len)
 
         # Optimizer
         opt = get_optimizer(ae_model, placeholders, feas, self.seq_len)
@@ -38,7 +38,7 @@ class Train_Runner():
         for epoch in range(self.iteration):
             avg_cost, feed_dict, struct_loss, temporal_loss = update(opt, sess, feas['struct_adj_norms'], feas['struct_adj_origs'],
                                               feas['struct_features'], feas['temporal_adj_origs'], placeholders)
-            print('total ', avg_cost, 'struct ', struct_loss, 'temporal ', temporal_loss)
+            print('epoch ', epoch, 'total ', avg_cost, 'struct ', struct_loss, 'temporal ', temporal_loss)
 
         embeddings = predict(ae_model, sess, feas, self.seq_len, placeholders)
         embeddings = np.reshape(np.array(embeddings)[:, -1, :], [feas['num_node'], FLAGS.hidden3[-1]])

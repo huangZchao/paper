@@ -26,6 +26,6 @@ class OptimizerAE(object):
                                                                                              pos_weight=temporal_pos_weights[ts]))
 
         self.optimizer = tf.train.AdamOptimizer(learning_rate=FLAGS.learning_rate)  # Adam Optimizer
-        self.cost = self.struct_cost + self.temporal_cost
+        self.cost = 1.0 * self.struct_cost + self.temporal_cost
         self.opt_op = self.optimizer.minimize(self.cost)
         self.grads_vars = self.optimizer.compute_gradients(self.cost)

@@ -41,7 +41,7 @@ class Model(object):
 
 
 class GCN(Model):
-    def __init__(self, placeholders, feature_dim, features_nonzeros, num_node, seq_len, num_channel, **kwargs):
+    def __init__(self, placeholders, feature_dim, features_nonzeros, num_node, seq_len, **kwargs):
         super(GCN, self).__init__(**kwargs)
         self.struct_features = placeholders['struct_features']
         self.struct_adj_norms = placeholders['struct_adj_norms']
@@ -51,7 +51,6 @@ class GCN(Model):
         self.dropout = placeholders['dropout']
         self.num_node = num_node
         self.seq_len = seq_len
-        self.num_channel = num_channel
         self.build()
 
     def _build(self):

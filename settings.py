@@ -3,7 +3,7 @@ flags = tf.app.flags
 FLAGS = flags.FLAGS
 
 
-flags.DEFINE_list('hidden3', [16, 16, 16], 'Number of units in hidden layer 3.')
+flags.DEFINE_list('hidden3', [64, 32, 16], 'Number of units in hidden layer 3.')
 flags.DEFINE_integer('discriminator_out', 0, 'discriminator_out.')
 flags.DEFINE_float('discriminator_learning_rate', 0.001, 'Initial learning rate.')
 flags.DEFINE_float('learning_rate', .5*0.001, 'Initial learning rate.')
@@ -14,8 +14,7 @@ flags.DEFINE_float('dropout', 0., 'Dropout rate (1 - keep probability).')
 flags.DEFINE_integer('features', 0, 'Whether to use features (1) or not (0).')
 flags.DEFINE_integer('seed', 50, 'seed for fixing the results.')
 flags.DEFINE_integer('iterations', 1000, 'number of iterations.')
-flags.DEFINE_integer('seq_len', 8, 'time stamp for each train.')
-flags.DEFINE_integer('num_channel', 3, 'num channel of TCN.')
+flags.DEFINE_integer('seq_len', 1, 'time stamp for each train.')
 
 
 def get_settings(dataname):
