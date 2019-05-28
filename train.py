@@ -16,7 +16,7 @@ class Train_Runner():
 
     def erun(self):
         # formatted data
-        feas = format_data(self.data_name, self.seq_len)
+        feas = format_data(self.data_name, self.seq_len, FLAGS.time_decay)
 
         # Define placeholders
         placeholders = get_placeholder(feas['struct_adj_norms'][0])
@@ -42,5 +42,5 @@ class Train_Runner():
         embeddings = predict(ae_model, sess, feas, placeholders)
         embeddings = np.reshape(np.array(embeddings)[:, -1, :], [feas['num_node'], FLAGS.hidden3[-1]])
         print(embeddings)
-        np.savetxt('/home/huawei/rise/paper_2/dataset/embedding/{}.txt'.format(self.data_name), embeddings)
+        np.savetxt('/home/huawei/PycharmProjects/paper_dataset/embedding/{}.txt'.format(self.data_name), embeddings)
 

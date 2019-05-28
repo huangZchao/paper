@@ -3,7 +3,7 @@ import settings
 from train import Train_Runner
 
 
-dataname = 'SYN-FIX'
+dataname = 'ca-cit-HepTh'
 
 settings = settings.get_settings(dataname)
 

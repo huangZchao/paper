@@ -34,9 +34,9 @@ def get_model(placeholders, feature_dim, features_nonzeros, num_node, seq_len):
     model = GCN(placeholders, feature_dim, features_nonzeros, num_node, seq_len)
     return model
 
-def format_data(data_name, seq_len):
+def format_data(data_name, seq_len, time_decay):
     # Load data
-    adjs, features = load_data(data_name)
+    adjs, features = load_data(data_name, time_decay)
 
     # Store original adjacency matrix (without diagonal entries) for later
     adj_origs = []
@@ -163,6 +163,8 @@ def predict(model, sess, feas, placeholders):
     batch_size = feas['batch_size']
     adj_norms = feas['struct_adj_norms'][batch_size-1]
     features = feas['struct_features'][batch_size-1]
+    # adj_norms = feas['adj_norms'][2: 10]
+    # features = feas['features'][2: 10]
 
     feed_dict = dict()
     for i, d in zip(placeholders['struct_adj_norms'], adj_norms):
