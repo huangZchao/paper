@@ -14,18 +14,20 @@ def sample_mask(idx, l):
     mask[idx] = 1
     return np.array(mask, dtype=np.bool)
 
-def load_data(dataset):
-    path = '/home/huawei/rise/paper_2/dataset/dynamic_datasets/{}.mat'.format(dataset)
+def load_data(dataset, time_decay):
+    path = '/home/huawei/PycharmProjects/paper_dataset/dynamic_datasets/{}.mat'.format(dataset)
     adjs = scio.loadmat(path)['dynamic_dataset']
 
     features = []
     adjs_ret = []
     for idx in range(adjs.shape[2]):
         adj = adjs[:, :, idx]
-        if len(np.where(np.diag(adj)==1)[0]) != 0:
-            for i in range(len(adj)):
-                adj[i, i] = 0
-        feature = np.eye(adj.shape[0])  # featureless
+        for i in range(len(adj)):
+            adj[i, i] = 0
+        feature = np.eye(adj.shape[0]) + adj  # featureless
+        adj = np.eye(adj.shape[0]) + adj
+        if idx:
+            feature += (time_decay * features[idx-1]) * feature
 
         adjs_ret.append(adj)
         features.append(feature)
