@@ -3,9 +3,9 @@ import settings
 from train import Train_Runner
 
 
-dataname = 'SYN-FIX'
+dataname = 'ia-workplace-contacts'
 
-settings = settings.get_settings(dataname)
+settings = settings.get_settings(dataname, 6)  # todo seq_len
 
 runner = Train_Runner(settings)
 

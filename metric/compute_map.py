@@ -1,4 +1,7 @@
 import numpy as np
+import scipy.io as scio
+import networkx as nx
+from tqdm import tqdm
 
 precision_pos = [2, 10, 100, 200, 300, 500, 1000]
 
@@ -78,14 +81,12 @@ def getNodeAnomaly(X_dyn):
         node_anom[:, t] = np.linalg.norm(X_dyn[t+1][:n_nodes, :] - X_dyn[t][:n_nodes, :], axis = 1)
     return node_anom
 
-if __name__ == '__main__':
-    import scipy.io as scio
-    import networkx as nx
-    from tqdm import tqdm
-
-    data_name = 'SBM'
-    pred = np.loadtxt('/home/huawei/PycharmProjects/paper_dataset/embedding/{}.txt'.format(data_name))
-    # pred = scio.loadmat('/home/huawei/rise/paper_2/dataset/embedding/{}.mat'.format(data_name))['ans']
+def compute_map(data_name, method):
+    if method == 'gcn&tcn':
+        pred = np.loadtxt('/home/huawei/PycharmProjects/paper_dataset/embedding/{}.txt'.format(data_name))  # GCN + TCN
+    # pred = np.loadtxt('/home/huawei/PycharmProjects/DynamicGEM/emb/ae/{}.txt'.format(data_name))  # ae
+    # pred = np.loadtxt('/home/huawei/PycharmProjects/DynamicGEM/emb/aernn/{}.txt'.format(data_name))  # aernn
+    # pred = np.loadtxt('/home/huawei/PycharmProjects/DynamicGEM/emb/rnn/{}.txt'.format(data_name))  # rnn
     label = scio.loadmat('/home/huawei/PycharmProjects/paper_dataset/dynamic_datasets/{}.mat'.format(data_name))[
                 'dynamic_dataset'][:, :, -1]
 
@@ -100,4 +101,9 @@ if __name__ == '__main__':
 
     true_graph = nx.from_numpy_array(label)
 
-    print(computeMAP(pred_edges, true_graph))
+    res = computeMAP(pred_edges, true_graph)
+    print(res)
+    return res
+
+# if __name__ == '__main__':
+#     map()

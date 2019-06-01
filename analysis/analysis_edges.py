@@ -1,7 +1,7 @@
 import scipy.io as scio
 import numpy as np
 
-dataset = 'SBM'
+dataset = 'ia-contacts_hypertext2009'
 path = '/home/huawei/PycharmProjects/paper_dataset/dynamic_datasets/{}.mat'.format(dataset)
 adjs = scio.loadmat(path)['dynamic_dataset']
 
