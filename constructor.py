@@ -24,7 +24,7 @@ def get_placeholder(struct_adj_norms):
         'temporal_pos_weights': tf.placeholder(dtype=tf.float32, shape=[len(struct_adj_norms), ], name='temporal_pos_weights'),
         'temporal_norms': tf.placeholder(dtype=tf.float32, shape=[len(struct_adj_norms), ], name='temporal_norms'),
 
-        'dropout': tf.placeholder_with_default(0., shape=()),  # todo
+        'dropout': tf.placeholder_with_default(0., shape=()),
     }
 
     return placeholders
