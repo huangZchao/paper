@@ -105,5 +105,6 @@ def compute_map(data_name, method):
     print(res)
     return res
 
-# if __name__ == '__main__':
-#     map()
+if __name__ == '__main__':
+    data_name = 'ia-radoslaw-email'
+    compute_map(data_name,'gcn&tcn')

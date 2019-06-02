@@ -3,9 +3,9 @@ import settings
 from train import Train_Runner
 
 
-dataname = 'ia-workplace-contacts'
+dataname = 'ca-cit-HepTh'
 
-settings = settings.get_settings(dataname, 6)  # todo seq_len
+settings = settings.get_settings(dataname, 13)  # todo seq_len-2
 
 runner = Train_Runner(settings)
 

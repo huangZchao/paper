@@ -37,7 +37,7 @@ class Train_Runner():
         for epoch in range(self.iteration):
             for i in range(feas['batch_size']-1):
                 avg_cost, feed_dict, struct_loss, temporal_loss = update(opt, sess, feas, i, placeholders)
-                print('epoch ', epoch, 'batch ', i, 'total ', avg_cost, 'struct ', struct_loss, 'temporal ', temporal_loss)
+                print('dataname ', self.data_name, ' epoch ', epoch, 'batch ', i, 'total ', avg_cost, 'struct ', struct_loss, 'temporal ', temporal_loss)
 
         embeddings = predict(ae_model, sess, feas, placeholders)
         embeddings = np.reshape(np.array(embeddings)[:, -1, :], [feas['num_node'], FLAGS.hidden3[-1]])
