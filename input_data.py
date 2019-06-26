@@ -17,7 +17,7 @@ def sample_mask(idx, l):
 def load_data(dataset, time_decay):
     path = '/home/huawei/PycharmProjects/paper_dataset/dynamic_datasets/{}.mat'.format(dataset)
     adjs = scio.loadmat(path)['dynamic_dataset']
-
+    print('dataset name: ', dataset, 'time lenght: ', adjs.shape[2])
     features = []
     adjs_ret = []
     for idx in range(adjs.shape[2]):

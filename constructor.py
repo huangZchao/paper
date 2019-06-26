@@ -173,5 +173,5 @@ def predict(model, sess, feas, placeholders):
         feed_dict.update({i: d})
     return sess.run(model.sequence_out, feed_dict=feed_dict)
 
-# if __name__ == '__main__':
-#     format_data('SYN-VAR', 3)
+if __name__ == '__main__':
+    format_data('SBM', 3, 0.5)
