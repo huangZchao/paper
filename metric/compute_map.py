@@ -83,11 +83,11 @@ def getNodeAnomaly(X_dyn):
 
 def compute_map(data_name, method, look_back):
     if method == 'gcn&tcn':
-        pred = np.loadtxt('/home/huawei/PycharmProjects/paper_dataset/embedding/{}.txt'.format(data_name))  # GCN + TCN
+        pred = np.loadtxt('/home/huawei/risehuang/paper2/gcn_tcn/embedding/{}.txt'.format(data_name))  # GCN + TCN
     # pred = np.loadtxt('/home/huawei/PycharmProjects/DynamicGEM/emb/ae/{}.txt'.format(data_name))  # ae
     # pred = np.loadtxt('/home/huawei/PycharmProjects/DynamicGEM/emb/aernn/{}.txt'.format(data_name))  # aernn
     # pred = np.loadtxt('/home/huawei/PycharmProjects/DynamicGEM/emb/rnn/{}.txt'.format(data_name))  # rnn
-    label = scio.loadmat('/home/huawei/PycharmProjects/paper_dataset/dynamic_datasets/{}.mat'.format(data_name))[
+    label = scio.loadmat('/home/huawei/risehuang/paper2/gcn_tcn/dynamic_datasets/{}.mat'.format(data_name))[
                 'dynamic_dataset'][:, :, look_back]
 
     top_k = int(len(np.where(label == 1)[0]) / 2)

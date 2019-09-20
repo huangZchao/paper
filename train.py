@@ -30,17 +30,17 @@ class Train_Runner():
 
         # Initialize session
         gpu_options = tf.GPUOptions(allow_growth=True)
-        sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+        sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options, log_device_placement=True))
         sess.run(tf.global_variables_initializer())
 
         # Train model
         for epoch in range(self.iteration):
-            for i in range(feas['batch_size']-1):
+            for i in range(1):   # mean only use the first batch;
                 avg_cost, feed_dict, struct_loss, temporal_loss = update(opt, sess, feas, i, placeholders)
                 print('dataname ', self.data_name, ' epoch ', epoch, 'batch ', i, 'total ', avg_cost, 'struct ', struct_loss, 'temporal ', temporal_loss)
 
         embeddings = predict(ae_model, sess, feas, placeholders)
         embeddings = np.reshape(np.array(embeddings)[:, -1, :], [feas['num_node'], FLAGS.hidden3[-1]])
         print(embeddings)
-        np.savetxt('/home/huawei/PycharmProjects/paper_dataset/embedding/{}.txt'.format(self.data_name), embeddings)
+        np.savetxt('/home/huawei/risehuang/paper2/gcn_tcn/embedding/{}.txt'.format(self.data_name), embeddings)
 

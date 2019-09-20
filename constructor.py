@@ -161,8 +161,8 @@ def update(opt, sess, feas, i, placeholders):
 
 def predict(model, sess, feas, placeholders):
     batch_size = feas['batch_size']
-    adj_norms = feas['struct_adj_norms'][batch_size-1]
-    features = feas['struct_features'][batch_size-1]
+    adj_norms = feas['struct_adj_norms'][1]
+    features = feas['struct_features'][1]
     # adj_norms = feas['adj_norms'][2: 7]
     # features = feas['features'][2: 7]
 
