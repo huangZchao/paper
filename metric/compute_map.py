@@ -2,8 +2,12 @@ import numpy as np
 import scipy.io as scio
 import networkx as nx
 from tqdm import tqdm
+import tensorflow as tf
 
 precision_pos = [2, 10, 100, 200, 300, 500, 1000]
+# Settings
+flags = tf.app.flags
+FLAGS = flags.FLAGS
 
 def computePrecisionCurve(predicted_edge_list, true_digraph, max_k=-1):
     if max_k == -1:
@@ -81,14 +85,23 @@ def getNodeAnomaly(X_dyn):
         node_anom[:, t] = np.linalg.norm(X_dyn[t+1][:n_nodes, :] - X_dyn[t][:n_nodes, :], axis = 1)
     return node_anom
 
-def compute_map(data_name, method, look_back):
-    if method == 'gcn&tcn':
-        pred = np.loadtxt('/home/huawei/risehuang/paper2/gcn_tcn/embedding/{}.txt'.format(data_name))  # GCN + TCN
-    # pred = np.loadtxt('/home/huawei/PycharmProjects/DynamicGEM/emb/ae/{}.txt'.format(data_name))  # ae
-    # pred = np.loadtxt('/home/huawei/PycharmProjects/DynamicGEM/emb/aernn/{}.txt'.format(data_name))  # aernn
-    # pred = np.loadtxt('/home/huawei/PycharmProjects/DynamicGEM/emb/rnn/{}.txt'.format(data_name))  # rnn
-    label = scio.loadmat('/home/huawei/risehuang/paper2/gcn_tcn/dynamic_datasets/{}.mat'.format(data_name))[
-                'dynamic_dataset'][:, :, look_back]
+def compute_map(data_name, method, look_back, param=False):
+    dataset = scio.loadmat('/home/huawei/risehuang/paper2/gcn_tcn/dynamic_datasets/{}.mat'.format(data_name))[
+                'dynamic_dataset']
+    label = dataset[:, :, look_back]
+    pred = np.loadtxt('/home/huawei/risehuang/paper2/gcn_tcn/embedding/{}/{}.txt'.format(dataset.shape[2]+look_back-1, data_name))  # GCN + TCN
+
+    if param:
+        print('analysis parameter')
+        time_decay = FLAGS.time_decay
+        alpha = FLAGS.alpha
+        emb = FLAGS.hidden3
+        emb = '-'.join(list(map(str, emb)))
+        subdir = emb+'-'+str(time_decay)+'-'+str(alpha)
+        pred = np.loadtxt(
+            '/home/huawei/risehuang/paper2/gcn_tcn/embedding/{}/{}/{}.txt'.format(subdir,
+                                                                                  dataset.shape[2] + look_back - 1,
+                                                                                  data_name))  # GCN + TCN
 
     top_k = int(len(np.where(label == 1)[0]) / 2)
     distances = dict()

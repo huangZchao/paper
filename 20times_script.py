@@ -16,7 +16,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 #     ['ia-workplace-contacts', 'ia-hospital-ward-proximity']]
 # time_step = [7, 8]
 datasets = [
-    ['ia-yahoo-messages']]
+    ['ca-cit-HepPh']]
 time_step = [7]
 
 
@@ -26,28 +26,31 @@ def script(dataname, res, seq_len, look_back):
     tops = {100: [], 500: [], 1000: []}
     for i in range(1):
         tf.reset_default_graph()
-        setting = settings.get_settings(dataname, seq_len - look_back)
+        # train used time length
+        train_length = seq_len - look_back
+        setting = settings.get_settings(dataname, train_length)
+
         runner = Train_Runner(setting)
         start = time.clock()
         runner.erun()
         print(dataname, " time consuming: ", time.clock() - start)
 
-    #     mAP = compute_map(dataname, 'gcn&tcn', -(look_back-1))
+    #     mAP = compute_map(dataname, 'gcn&tcn', -(look_back-1), True)
     #     mAPs.append(mAP)
     # average_map = sum(mAPs)/len(mAPs)
     # res[dataname] = [average_map]
 
-        for top in [100, 500, 1000]:
-            tops[top].append(compute_precision_at_k(dataname, 'gcn&tcn', -(look_back-1), top))
-    for top, v in tops.items():
-        average_precision = sum(v)/len(v)
-        res[dataname+'_top_{}'.format(top)] = [average_precision]
+    #     for top in [100, 500, 1000]:
+    #         tops[top].append(compute_precision_at_k(dataname, 'gcn&tcn', -(look_back-1), top))
+    # for top, v in tops.items():
+    #     average_precision = sum(v)/len(v)
+    #     res[dataname+'_top_{}'.format(top)] = [average_precision]
 
 
 if __name__ == '__main__':
     save_dict = {}
     procs = []
-    for look_back in range(2, 6):
+    for look_back in range(2, 3):
         with multiprocessing.Manager() as MG:
             res = multiprocessing.Manager().dict()
 

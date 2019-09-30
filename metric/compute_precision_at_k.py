@@ -4,21 +4,10 @@ from tqdm import tqdm
 import networkx as nx
 
 def compute_precision_at_k(data_name, method, look_back, top_k):
-    if method == 'gcn&tcn':
-        pred = np.loadtxt('/home/huawei/risehuang/paper2/gcn_tcn/embedding/{}.txt'.format(data_name))  # GCN + TCN
-    elif method == 'ae':
-        pred = np.loadtxt('/home/huawei/PycharmProjects/DynamicGEM/emb/ae/{}.txt'.format(data_name))  # ae
-    elif method == 'aernn':
-        pred = np.loadtxt('/home/huawei/PycharmProjects/DynamicGEM/emb/aernn/{}.txt'.format(data_name))  # aernn
-    elif method == 'rnn':
-        pred = np.loadtxt('/home/huawei/PycharmProjects/DynamicGEM/emb/rnn/{}.txt'.format(data_name))  # rnn
-    elif method == 'sdne':
-        pred = scio.loadmat('/home/huawei/PycharmProjects/SDNE/result/{}/embedding.mat'.format(data_name))['embedding']  # rnn
-    else:
-        raise ValueError('wrong method.')
-
-    label = scio.loadmat('/home/huawei/risehuang/paper2/gcn_tcn/dynamic_datasets/{}.mat'.format(data_name))[
-                'dynamic_dataset'][:, :, look_back]
+    dataset = scio.loadmat('/home/huawei/risehuang/paper2/gcn_tcn/dynamic_datasets/{}.mat'.format(data_name))[
+                'dynamic_dataset']
+    label = dataset[:, :, look_back]
+    pred = np.loadtxt('/home/huawei/risehuang/paper2/gcn_tcn/embedding/{}/{}.txt'.format(dataset.shape[2]+look_back-1, data_name))  # GCN + TCN
 
     distances = dict()
     for i in tqdm(range(len(pred) - 1)):
@@ -27,7 +16,7 @@ def compute_precision_at_k(data_name, method, look_back, top_k):
 
     distances = np.array(sorted(distances.items(), key=lambda item: item[1]))[: top_k]
     pred_edges = [(pair[0], pair[1]) for pair in distances[:, 0]]
-
+    print(distances)
     true_graph = nx.from_numpy_array(label)
 
     correct = 0
